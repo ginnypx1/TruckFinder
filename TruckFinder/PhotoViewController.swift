@@ -52,7 +52,7 @@ class PhotoViewController: UIViewController, UICollectionViewDataSource, UIColle
         // add activity indicator
         addActivityIndicator()
         // set up custom flow
-        fitCollectionFlowToSmallSize(self.view.frame.size)
+        fitCollectionFlowToSize(self.view.frame.size, numberHorizontal: 5.0, numberVertical: 3.0)
         // hide noImagesLabel
         noImagesLabel.isHidden = true
         
@@ -82,10 +82,10 @@ class PhotoViewController: UIViewController, UICollectionViewDataSource, UIColle
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if isSmall {
-            fitCollectionFlowToBigSize(self.view.frame.size)
+            fitCollectionFlowToSize(self.view.frame.size, numberHorizontal: 3.0, numberVertical: 2.0)
             self.isSmall = false
         } else {
-            fitCollectionFlowToSmallSize(self.view.frame.size)
+            fitCollectionFlowToSize(self.view.frame.size, numberHorizontal: 5.0, numberVertical: 3.0)
             self.isSmall = true
         }
         
