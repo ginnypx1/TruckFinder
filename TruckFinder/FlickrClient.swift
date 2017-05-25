@@ -15,8 +15,6 @@ class FlickrClient : NSObject {
     var session = URLSession.shared
     var flickrRequest = FlickrRequest()
     
-    var pageRequested: Int = 0
-    
     // MARK: - Decide Which Trucks to Search For
     
     var truckTags: [String] = ["truck", "construction+truck", "emergency+truck", "farm+truck", "garbage+truck", "big+rig", "road+truck", "roadword+truck"]
@@ -28,9 +26,8 @@ class FlickrClient : NSObject {
     
     // MARK: - Fetch all Images with SearchText
     
-    func fetchImagesWithSearchText(completionHandler: @escaping (_ result: AnyObject?, _ error: NSError?) -> Void) {
+    func fetchImagesWithSearchText(pageRequested: Int, completionHandler: @escaping (_ result: AnyObject?, _ error: NSError?) -> Void) {
         
-        pageRequested += 1
         let searchTags = getRandomTruckTag(from: truckTags)
         
         print("2. Building request for all photos... Page: \(pageRequested), SearchTags: \(searchTags)")

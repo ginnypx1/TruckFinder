@@ -15,11 +15,15 @@ class PhotoViewController: UIViewController, UICollectionViewDataSource, UIColle
     
     @IBOutlet weak var flowLayout: UICollectionViewFlowLayout!
     @IBOutlet weak var collectionView: UICollectionView!
-    @IBOutlet weak var collectionButton: UIButton!
     @IBOutlet weak var noImagesLabel: UILabel!
     
     // MARK: - Properties
     var isSmall: Bool = true
+    
+    var pageRequested: Int = 1
+    var isFetching: Bool = false
+    var imagesRetrieved: Int = 0
+    var hasMoreData: Bool = true
     
     // API call
     var flickrClient = FlickrClient()
@@ -121,6 +125,17 @@ class PhotoViewController: UIViewController, UICollectionViewDataSource, UIColle
         return cell
     }
     
+    func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        // if not fetching run this code
+        if !isFetching {
+            if indexPath.row >= (self.imagesRetrieved - 3) {
+                print("Requesting more images...")
+                self.pageRequested += 1
+                fetchImages()
+            }
+        }
+    }
+    
     
     // MARK: - Fetched Results Controller Delegate
     
@@ -178,24 +193,31 @@ class PhotoViewController: UIViewController, UICollectionViewDataSource, UIColle
     // MARK: - Fetch Images from Flickr
     
     func fetchImages() {
+        
+        guard isFetching == false else { return }
+        guard hasMoreData == true else { return }
+        
         activityIndicator.startAnimating()
-        collectionButton.isEnabled = false
         noImagesLabel.isHidden = true
+        
+        isFetching = true
         
         print("1. Starting request for photos...")
         
-        flickrClient.fetchImagesWithSearchText() { (data: AnyObject?, error: NSError?) -> Void in
+        flickrClient.fetchImagesWithSearchText(pageRequested: self.pageRequested) { (data: AnyObject?, error: NSError?) -> Void in
             // returned from JSON parsing on main thread
+            
+            self.isFetching = false
+            self.activityIndicator.stopAnimating()
             
             if error != nil {
                 print("There was an error getting the images: \(String(describing: error))")
-                self.activityIndicator.stopAnimating()
+                
                 if isInternetAvailable() == false {
                     Alerts.displayInternetConnectionAlert(from: self)
                 } else {
                     Alerts.displayStandardAlert(from: self)
                 }
-                self.collectionButton.isEnabled = true
             } else {
                 guard let data = data else {
                     print("No data was returned.")
@@ -205,15 +227,18 @@ class PhotoViewController: UIViewController, UICollectionViewDataSource, UIColle
                 
                 if !photoURLs.isEmpty {
                     print("5. There were \(photoURLs.count) photos returned.")
+                    
+                    if photoURLs.count < 21 {
+                        self.hasMoreData = false
+                    }
+                    
+                    self.imagesRetrieved += photoURLs.count
+
                     for url in photoURLs {
                         self.delegate.stack.addFlickrPhotoToDatabase(urlString: url, fetchedResultsController: self.fetchedResultsController)
-                        self.activityIndicator.stopAnimating()
-                        self.collectionButton.isEnabled = true
                     }
                 } else {
                     self.noImagesLabel.isHidden = false
-                    self.activityIndicator.stopAnimating()
-                    self.collectionButton.isEnabled = true
                 }
             }
             self.collectionView.reloadSections(IndexSet(integer: 0))
@@ -228,15 +253,8 @@ class PhotoViewController: UIViewController, UICollectionViewDataSource, UIColle
         }
     }
     
-    // MARK: - Import New Photos or Delete
-    
-    @IBAction func importNewPhotos(_ sender: Any) {
-        print("Button pressed.")
-        
-        collectionButton.isEnabled = false
-        
+    @IBAction func deleteAllPhotos(_ sender: Any) {
         deleteAllFlickrPhotos()
-        fetchImages()
     }
     
 }
