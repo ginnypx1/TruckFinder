@@ -36,3 +36,7 @@ The Flickr API can be found at: https://www.flickr.com/services/api/
 ## Planned Utilization
 
 When a player correctly guesses the identity of a certain truck, they will be able to press a button that allows them to see many more pictures of that type of truck. A collection of images for each type of truck will be stored in Core Data, which will allow the app to be much more useful in an offline mode.
+
+## To Do
+
+Right now, NSCache is storing cached images instead of Core Data storing the binary photo data from Flickr. SDWebImage has been loaded into the app, but is not currently being used. I'd like to eventually refactor the app so that all of the fetchImages code goes through SDWebImage.
