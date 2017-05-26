@@ -12,12 +12,11 @@ import CoreData
 
 public class FlickrPhoto: NSManagedObject {
     
-    convenience init(urlString: String, imageData: Data? = nil, context: NSManagedObjectContext) {
+    convenience init(urlString: String, context: NSManagedObjectContext) {
         
         if let ent = NSEntityDescription.entity(forEntityName: "FlickrPhoto", in: context) {
             self.init(entity: ent, insertInto: context)
             self.urlString = urlString
-            self.imageData = imageData as NSData?
         } else {
             fatalError("Unable to find FlickrPhoto Entity!")
         }

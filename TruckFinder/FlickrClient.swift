@@ -15,6 +15,8 @@ class FlickrClient : NSObject {
     var session = URLSession.shared
     var flickrRequest = FlickrRequest()
     
+    let delegate = UIApplication.shared.delegate as! AppDelegate
+    
     // MARK: - Decide Which Trucks to Search For
     
     var truckTags: [String] = ["truck", "construction+truck", "emergency+truck", "farm+truck", "garbage+truck", "big+rig", "road+truck", "roadword+truck"]
@@ -109,7 +111,13 @@ class FlickrClient : NSObject {
             }
             
             OperationQueue.main.addOperation {
-                flickrPhoto.imageData = data as NSData
+                // add to cache
+                guard let image = UIImage(data: data) else {
+                    print("Image data could not be extracted")
+                    return
+                }
+                self.delegate.imageCache.setObject(image, forKey: photoURLString as AnyObject)
+                
                 completionHandler(data)
             }
         }

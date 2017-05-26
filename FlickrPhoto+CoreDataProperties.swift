@@ -16,7 +16,6 @@ extension FlickrPhoto {
         return NSFetchRequest<FlickrPhoto>(entityName: "FlickrPhoto")
     }
 
-    @NSManaged public var imageData: NSData?
     @NSManaged public var urlString: String?
 
 }

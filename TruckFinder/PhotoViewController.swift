@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreData
+import SDWebImage
 
 class PhotoViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, NSFetchedResultsControllerDelegate {
     
@@ -24,7 +25,7 @@ class PhotoViewController: UIViewController, UICollectionViewDataSource, UIColle
     var isFetching: Bool = false
     var imagesRetrieved: Int = 0
     var hasMoreData: Bool = true
-    
+        
     // API call
     var flickrClient = FlickrClient()
     
@@ -100,10 +101,11 @@ class PhotoViewController: UIViewController, UICollectionViewDataSource, UIColle
         
         if self.fetchedResultsController.fetchedObjects?.count != 0 {
             let flickrPhoto = self.fetchedResultsController.object(at: indexPath) as FlickrPhoto
-            if flickrPhoto.imageData != nil {
-                // make an image from the core data store
-                let photo = UIImage(data: flickrPhoto.imageData! as Data)
-                cell.update(with: photo)
+            let urlString = flickrPhoto.urlString!
+            // if image is cached
+            if let cachedImage = delegate.imageCache.object(forKey: urlString as AnyObject) as? UIImage {
+                print("Loading from cache.")
+                cell.update(with: cachedImage)
             } else {
                 // download and store the image
                 flickrClient.fetchImage(for: flickrPhoto) { (data: Data?) -> Void in
@@ -113,15 +115,18 @@ class PhotoViewController: UIViewController, UICollectionViewDataSource, UIColle
                         print("Image data could not be extracted")
                         return
                     }
+                    
                     let photoIndexPath = IndexPath(item: indexPath.row, section: 0)
                     if let cell = self.collectionView.cellForItem(at: photoIndexPath)
                         as? PhotoViewCell {
-                        cell.update(with: image)
                         print("7. displaying photo")
+                        cell.update(with: image)
                     }
                 }
             }
+            
         }
+
         return cell
     }
     
